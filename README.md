@@ -33,9 +33,12 @@ Both bundles include Node.js and open the PC dashboard in your default browser. 
 [Screen capture checklist](docs/screenshots/README.md)
 
 <!-- Add screenshots here after placing the files in docs/screenshots.
-![iPad landscape dashboard](docs/screenshots/ipad-landscape.png)
-![Motorola G landscape dashboard](docs/screenshots/moto-g-landscape.png)
-![Motorola G portrait dashboard](docs/screenshots/moto-g-portrait.png)
+![PC - Windows - Screenshot](docs/screenshots/PC - Windows - Screenshot.png)
+![PC - Windows - Screenshot 2](docs/screenshots/PC - Windows - Screenshot 2.png)
+![iPad - Safari - H -Screenshot](docs/screenshots/iPad - Safari - H -Screenshot.png)
+![iPad - Safari - V - Screenshot](docs/screenshots/iPad - Safari - V - Screenshot.png)
+![Moto G - Chrome - H - Screenshot](docs/screenshots/Moto G - Chrome - H - Screenshot.png)
+![Moto G - Chrome - V - Screenshot](docs/screenshots/Moto G - Chrome - V - Screenshot.png)
 -->
 
 ## Compatibility
