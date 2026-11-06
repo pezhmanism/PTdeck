@@ -32,14 +32,23 @@ Both bundles include Node.js and open the PC dashboard in your default browser. 
 
 [Screen capture checklist](docs/screenshots/README.md)
 
-<!-- Add screenshots here after placing the files in docs/screenshots.
-![PC - Windows - Screenshot](docs/screenshots/PC - Windows - Screenshot.png)
-![PC - Windows - Screenshot 2](docs/screenshots/PC - Windows - Screenshot 2.png)
-![iPad - Safari - H -Screenshot](docs/screenshots/iPad - Safari - H -Screenshot.png)
-![iPad - Safari - V - Screenshot](docs/screenshots/iPad - Safari - V - Screenshot.png)
-![Moto G - Chrome - H - Screenshot](docs/screenshots/Moto G - Chrome - H - Screenshot.png)
-![Moto G - Chrome - V - Screenshot](docs/screenshots/Moto G - Chrome - V - Screenshot.png)
--->
+### Windows
+
+![PTdeck on Windows](docs/screenshots/PC%20-%20Windows%20-%20Screenshot.png)
+
+![PTdeck on Windows, second view](docs/screenshots/PC%20-%20Windows%20-%20Screenshot%202.png)
+
+### iPad
+
+![PTdeck on iPad in landscape](docs/screenshots/iPad%20-%20Safari%20-%20H%20-Screenshot.png)
+
+![PTdeck on iPad in portrait](docs/screenshots/iPad%20-%20Safari%20-%20V%20-%20Screenshot.png)
+
+### Motorola G
+
+![PTdeck on Motorola G in landscape](docs/screenshots/Moto%20G%20-%20Chrome%20-%20H%20-%20Screenshot.png)
+
+![PTdeck on Motorola G in portrait](docs/screenshots/Moto%20G%20-%20Chrome%20-%20V%20-%20Screenshot.png)
 
 ## Compatibility
 
