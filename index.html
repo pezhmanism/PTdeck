@@ -1,0 +1,697 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><title>PTdeck</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0b0a0e;background:radial-gradient(ellipse at top left,#242043 0%,#0b0a0e 48%,#241611 100%) fixed;color:#faf8fc;font:16px Arial,sans-serif}
+main{max-width:1080px;margin:auto;padding:18px}
+header{position:relative;padding:0 0 14px}
+#clock{font-size:48px;font-weight:bold;letter-spacing:-2px;line-height:1}
+#today{margin-top:8px;text-transform:uppercase;letter-spacing:1px;font-weight:bold;font-size:12px;color:#aaa6b6}
+#host{position:absolute;right:0;top:9px;font-size:13px;color:#d4d0da;max-width:56%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#77717f;margin-right:5px}
+.dot.online{background:#67e786}
+section,.card{background:#201e23;border:1px solid #3a363f;border-radius:20px;padding:14px;margin-bottom:12px}
+h2{font-size:13px;margin:0 0 10px;text-transform:uppercase;letter-spacing:1px;color:#b6b0bf}
+button,input,textarea{font:inherit;color:inherit;border-radius:8px;border:1px solid #4c4553;background:#302c36;padding:9px}
+button{cursor:pointer;min-height:40px}
+button:active{background:#51465b}
+button:disabled{opacity:.45}
+.tiles{margin:0 -4px}
+.tile{display:inline-block;vertical-align:top;width:33.333%;padding:4px;text-align:center}
+.tile button{display:block;width:100%;max-width:130px;margin:auto;background:#24222a;background:linear-gradient(#32303a,#201e24);border-radius:22px;min-height:72px;box-shadow:0 3px 0 #100f13}
+.tile .glyph{display:inline-block;width:40px;height:40px;line-height:40px;border-radius:11px;font-weight:bold;font-size:24px;background:#6355bd;color:#fff}
+.tile .caption{display:block;margin:7px 0 3px;color:#d9d4df;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row{margin:8px 0}.row input{width:100%;margin-bottom:6px}
+textarea{width:100%;min-height:100px;display:block;margin-bottom:10px}
+.calendar{text-align:center;table-layout:fixed;width:100%;border-collapse:collapse}
+.calendar td,.calendar th{padding:8px 0}
+.calendar th,.muted,.status{color:#b6b0bf}
+.calendar th{font-size:12px}.current,.action{background:#e5d9ff;color:#241932;font-weight:bold}
+.month{text-align:center;margin-bottom:12px}.month span{display:inline-block;min-width:122px}
+.status{min-height:20px;margin:5px 0;font-size:13px}
+.dashboard,.widgets{overflow:hidden}
+.bigstat{font-weight:bold;font-size:24px;margin-bottom:4px}
+.down{color:#7fddff}.up{color:#87e2a4}
+#spark{width:100%;height:31px;display:block;margin-top:8px}
+.player{position:relative;overflow:hidden}
+.cover{width:38px;height:38px;line-height:38px;border-radius:10px;text-align:center;background:#684cb2;float:left;margin-right:9px;font-size:23px}
+.controls{float:right;white-space:nowrap;margin-left:6px}
+.controls button{padding:4px 7px;border:0;background:transparent}
+.controls #play{border-radius:50%;min-width:40px;background:#f6efff;color:#1d1822}
+.track{overflow:hidden}.track div{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#artist{font-size:12px;color:#bbb3c5;margin-top:3px}
+.progress{height:3px;background:#49434f;margin-top:6px}.progress div{height:3px;background:#ded4f2;width:0}
+@media(min-width:480px){.tile{width:25%}.row input{width:39%;margin-right:4px}}
+@media(min-width:650px){.deck-main{width:70%;float:left}.sidebar{width:28%;float:right}}
+@media(min-width:760px){main{padding:28px}.tile button{min-height:94px}.tile .glyph{width:49px;height:49px;line-height:49px}.column{width:49%;float:left}.column+.column{float:right}}
+#pairing{display:none}.pairing #pairing{display:block}.pairing .dashboard,.pairing .widgets{display:none}
+#pair-code{width:110px}
+#host-meta,#host-battery{display:block;color:#c0aab4;font-size:12px;margin-top:5px}
+#metrics{display:table;width:100%;table-layout:fixed;border-spacing:4px}
+.metric{display:table-cell;text-align:center;background:#261f2b;border-radius:9px;padding:8px 1px;font-size:12px;vertical-align:middle}
+.metric small{display:block;color:#b6b0bf;margin-bottom:4px;font-size:10px}
+#tasks{list-style:none;margin:4px 0;padding:0;overflow:auto;max-height:160px}
+#tasks li{display:table;width:100%;padding:2px 0;font-size:13px;word-break:break-word}
+#tasks label{display:table-cell;vertical-align:middle}
+#tasks input{margin:0 5px 0 0}
+#tasks button{display:table-cell;min-height:24px;padding:1px 5px;margin-left:5px}
+#task-form{display:table;width:100%;white-space:nowrap}
+#task-form input{width:76%;padding:5px;font-size:16px}
+#task-form button{padding:4px;min-height:30px}
+#bluetooth{margin:0;padding:0;list-style:none;overflow:auto;font-size:13px}
+#bluetooth li{padding:4px 0}
+#pages{text-align:center;height:25px}
+#pages button{border:0;background:transparent;padding:0 5px;min-height:24px;color:#82788e}
+#pages .selected{color:#e9d8ff}
+.tile img{display:none;width:58px;height:58px;object-fit:contain}
+.tile img.ready{display:inline-block}
+.controls svg{width:19px;height:19px;display:block;margin:auto;fill:currentColor}
+#calendar-card h2{display:none}
+
+.calendar .current{background:#a5dab6}
+.ipad, .ipad body{height:100%;width:100%;overflow:hidden}
+.ipad main{position:relative;height:100%;max-width:none;padding:0;overflow:hidden}
+.ipad header{position:absolute;left:2%;right:2%;top:2%;height:10%;padding:0;white-space:nowrap}
+.ipad #clock{font-size:8vh;display:inline-block;vertical-align:middle}
+.ipad #today{display:inline-block;vertical-align:middle;margin:0 0 0 2vw;font-size:1.75vw;color:#a6a1b0}
+.ipad #host{width:30%;max-width:none;background:#391d2a;border:1px solid #633747;border-radius:13px;padding:7px 10px;top:0;text-align:right}
+.ipad .dashboard{position:absolute;top:13%;bottom:2%;left:2%;right:2%}
+.ipad .deck-main{position:absolute;left:0;width:68%;height:100%;float:none}
+.ipad .sidebar{position:absolute;right:0;width:30%;height:100%;float:none;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column}
+.ipad .sidebar .card{margin-bottom:7px;padding:8px;border-radius:12px}
+.ipad .sidebar h2{font-size:11px;margin-bottom:4px}
+.ipad .tiles{position:absolute;top:0;bottom:17%;left:0;right:0;margin:0;overflow:hidden}
+.ipad .tile{width:25%;height:25%;padding:2px;overflow:hidden;vertical-align:top}
+.ipad .tile button:active{opacity:.6}
+.ipad .tile .glyph,.ipad .tile img{width:8vh;height:8vh;line-height:8vh;font-size:4vh}
+.ipad .tile img{vertical-align:middle}
+.ipad .tile .caption{margin:2px 0 0;font-size:clamp(10px,1.45vw,18px)}
+.ipad #pages{position:absolute;left:0;right:0;bottom:12%;height:24px}
+.ipad #connection{position:absolute;left:0;right:0;bottom:15.5%;margin:0;text-align:center;pointer-events:none}
+.ipad .player{position:absolute;bottom:0;left:0;right:0;margin:0;height:11%;min-height:45px;padding:5px 9px;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center}
+.ipad .track{-webkit-flex:1;flex:1}
+.ipad .controls{float:none;-webkit-order:3;order:3}
+.ipad .controls button{width:5.6vw;height:5.6vw;min-height:0;max-height:52px}
+.ipad .controls svg{width:50%;height:50%}
+.ipad #metrics{border-spacing:3px;margin-bottom:5px}
+.ipad #todo-card{-webkit-flex:1;flex:1;min-height:0;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column}
+.ipad #tasks{-webkit-flex:1;flex:1;max-height:none;margin:0}
+.ipad #task-status{margin:0;min-height:0}
+.ipad #calendar-card{margin:0 0 7px;padding:7px;border-radius:12px}
+.ipad .calendar th,.ipad .calendar td{padding:.38vh 0;font-size:12px}
+.ipad .month{margin-bottom:2px;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:space-between;justify-content:space-between}
+.ipad .month span{min-width:0;font-size:12px}
+.ipad .month button{min-height:0;padding:1px 7px}
+.ipad #bluetooth-card{margin:0;min-height:44px;max-height:18%}
+.ipad #bluetooth{max-height:8vh}
+.ipad #pairing{position:absolute;top:19%;left:4%;right:4%}
+@media (orientation:portrait){
+  .ipad #clock{font-size:7vh}
+  .ipad .deck-main{width:100%;height:58%}
+  .ipad .sidebar{top:60%;height:40%;width:100%;display:block}
+  .ipad #metrics{width:100%}
+  .ipad #todo-card,.ipad #calendar-card,.ipad #bluetooth-card{display:inline-block;vertical-align:top;width:32%;height:78%;max-height:none;overflow:auto;margin-right:1%}
+  .ipad #bluetooth-card{margin-right:0}
+  .ipad #bluetooth{max-height:none}
+  .ipad #tasks{max-height:12vh}
+}
+.ipad .tile button{height:75%;min-height:0;max-width:none;padding:0;background:transparent;border:0;box-shadow:none}
+.bluetooth-heading{display:table;width:100%}
+.bluetooth-heading h2{display:table-cell;vertical-align:middle}
+#fullscreen{float:right;background:transparent;border:0;padding:4px;min-height:28px;line-height:0}
+#fullscreen svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2}
+#fullscreen-help{position:fixed;z-index:10;top:0;left:0;right:0;bottom:0;padding:12vh 8vw;background:rgba(0,0,0,.72)}
+#fullscreen-help section{max-width:420px;margin:auto}
+#bluetooth li{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;width:100%;line-height:1.2}
+.device-icon{-webkit-flex:none;flex:none;width:19px;height:19px;vertical-align:middle;fill:none;stroke:#b9a8e1;stroke-width:1.7}
+.device-name,.device-battery{display:table-cell;vertical-align:middle;padding-left:6px}
+.device-name{-webkit-flex:1;flex:1;min-width:0;overflow-wrap:break-word;word-wrap:break-word}
+.device-battery{white-space:nowrap;color:#c6e9cf}
+#task-form{display:-webkit-flex;display:flex;white-space:normal}
+#task-form input{width:0;min-width:0;-webkit-flex:1;flex:1;margin-right:6px}
+#task-form button{min-width:36px;font-size:20px}
+.ipad header{top:2.6%;height:11%;padding-left:6.5vw}
+.ipad #clock{font-size:8.2vh}
+.ipad #today{font-size:1.8vw}
+.ipad #host{height:100%;font-size:2.15vw;padding:8px 10px;text-align:left}
+.ipad #host-meta,.ipad #host-battery{font-size:1.65vw;margin-top:2px;overflow:hidden;text-overflow:ellipsis}
+.ipad #fullscreen{margin-left:4px;padding:5px;min-width:32px;min-height:32px}
+.ipad .dashboard{top:15%}
+.ipad .sidebar{height:83%}
+.ipad .sidebar h2,.ipad #bluetooth-card h2{font-size:clamp(12px,1.55vw,21px)}
+.ipad .metric{font-size:clamp(11px,1.5vw,19px);padding:5px 1px}
+.ipad .metric small{font-size:clamp(10px,1.25vw,16px)}
+.ipad .metric:last-child{font-size:clamp(9px,1.12vw,15px)}
+.ipad .tile .glyph,.ipad .tile img{width:10vh;height:10vh;max-width:90%;max-height:100%;line-height:10vh;font-size:4.8vh}
+.ipad .tile .caption{font-size:clamp(12px,1.65vw,21px)}
+.ipad #tasks li{font-size:clamp(13px,1.55vw,20px)}
+.ipad .calendar td,.ipad .calendar th{font-size:clamp(13px,1.75vw,23px);padding:.82vh 0}
+.ipad .month span{font-size:clamp(14px,1.85vw,24px)}
+.ipad .tiles{bottom:23%}
+.ipad #pages{bottom:17%}
+.ipad #connection{bottom:20%}
+.ipad .player{right:0;width:100%;height:15%}
+.ipad #bluetooth-card{position:absolute;right:0;bottom:0;width:30%;height:15%;max-height:none;min-height:45px;padding:6px 10px;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column}
+.ipad #bluetooth-card h2{margin-bottom:3px}
+.ipad #bluetooth{max-height:none;min-height:0;-webkit-flex:1;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;font-size:clamp(12px,1.5vw,19px)}
+.ipad #bluetooth li{padding:2px 0}
+@media (orientation:portrait){
+  .ipad header{padding-left:8vw;white-space:normal}
+  .ipad #clock{font-size:6vh}
+  .ipad #today{display:block;margin-left:0;font-size:2.2vw}
+  .ipad #host{width:34%;font-size:2.5vw}
+  .ipad #host-meta,.ipad #host-battery{font-size:2vw}
+  .ipad .deck-main{height:100%}
+  .ipad .tiles{bottom:57%}
+  .ipad .tile .glyph,.ipad .tile img{height:6.5vh;width:6.5vh;line-height:6.5vh}
+  .ipad #connection{bottom:54%}
+  .ipad #pages{bottom:51%}
+  .ipad .sidebar{top:48%;height:35%}
+  .ipad #calendar-card,.ipad #todo-card{width:49%;height:76%;margin-right:1%;vertical-align:top}
+  .ipad #todo-card{display:-webkit-inline-flex;display:inline-flex;margin-right:0}
+  .ipad .player{right:auto;width:66%}.ipad #bluetooth-card{width:32%}.ipad .calendar td,.ipad .calendar th{padding:.4vh 0}
+}
+.editor-heading{display:table;width:100%;margin-bottom:12px}
+.editor-heading h2,.editor-pair{display:table-cell;vertical-align:middle}
+.editor-pair{text-align:right;color:#cfc5de}
+#pc-pair{display:inline-block;margin-left:7px;color:#fff;font-weight:bold;font-size:30px;letter-spacing:.12em;vertical-align:middle}
+#wide-tabs{display:none}
+.wide,.wide body{width:100%;height:100%;overflow:hidden}
+.wide main{position:relative;max-width:none;height:100%;padding:0}
+.wide header{position:absolute;top:2%;left:2%;right:2%;height:15%;padding:0}
+.wide #clock,.wide #today{display:inline-block;vertical-align:middle}
+.wide #clock{font-size:15vh}
+.wide #today{margin:0 0 0 12px;font-size:12px}
+.wide #host{width:38%;max-width:none;top:0;border:1px solid #633747;background:#391d2a;border-radius:10px;padding:4px 8px;text-align:left}
+.wide #host-name{font-size:clamp(17px,4.4vh,24px);font-weight:bold}
+.wide #host-meta,.wide #host-battery{display:inline-block;font-size:clamp(13px,3.5vh,19px);margin:3px 8px 0 0}
+.wide #host-name:after{content:"";display:block}.wide #host-meta{margin-left:0}
+.wide #fullscreen{min-width:32px}
+.wide .dashboard{position:absolute;top:19%;bottom:2%;left:2%;right:2%}
+.wide .deck-main,.wide .sidebar{position:absolute;top:0;bottom:0;float:none}
+.wide .deck-main{left:0;width:60%}
+.wide .sidebar{right:0;width:38%;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;min-height:0}
+.wide .tiles{position:absolute;top:0;bottom:76px;left:0;right:0;margin:0;overflow:hidden}
+.wide .tile{width:16.666%;height:50%;padding:1px;overflow:hidden}
+.wide .tile button{height:79%;min-height:0;max-width:none;padding:0;border:0;background:transparent;box-shadow:none}
+.wide .tile img,.wide .tile .glyph{width:15vh;height:15vh;max-height:100%;max-width:95%;line-height:15vh}
+.wide .tile .caption{font-size:11px;margin:2px 0 0}
+.wide #pages{position:absolute;bottom:51px;left:0;right:0}
+.wide #connection{position:absolute;bottom:73px;left:0;right:0;margin:0;pointer-events:none;text-align:center;font-size:11px}
+.wide .player{position:absolute;bottom:0;left:0;right:0;margin:0;height:50px;padding:5px 7px;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center}
+.wide .track{-webkit-flex:1;flex:1;min-width:0}
+.wide .controls{-webkit-order:3;order:3;float:none}
+.wide .controls button{min-height:36px}
+.wide #metrics{margin:0 0 2px}
+.wide .metric{padding:2px 1px;line-height:1.1}.wide .metric small{margin-bottom:2px}
+.wide #wide-tabs{display:-webkit-flex;display:flex;margin:0 4px 4px}
+.wide #wide-tabs button{-webkit-flex:1;flex:1;min-height:27px;padding:3px 2px;font-size:12px}
+.wide #wide-tabs button+button{margin-left:4px}.wide #wide-tabs button[aria-pressed=true]{background:#e5d9ff;color:#241932}
+.wide #calendar-card,.wide #todo-card,.wide #bluetooth-card{display:none;min-height:0;margin:0;padding:5px 8px;border-radius:10px;overflow:auto;-webkit-flex:1;flex:1}
+.wide #bluetooth-card.active{display:block}.wide #calendar-card.active{display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column}
+.wide #todo-card.active{display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column}
+.wide #tasks{-webkit-flex:1;flex:1;min-height:0;margin:0}
+.wide #task-status{min-height:0;margin:0}
+.wide .month{margin-bottom:2px}
+.wide .month span{min-width:98px;font-size:13px}
+.wide .month button{min-height:26px;padding:2px 7px}
+.wide #calendar-card{padding:7px 9px 10px}.wide .calendar{-webkit-flex:1;flex:1;height:100%}.wide .calendar th,.wide .calendar td{padding:1px 0;font-size:clamp(12px,3.9vh,20px);line-height:1.1;font-weight:bold}
+.wide #pairing{position:absolute;top:20%;left:4%;right:4%;max-height:76%;overflow:auto}
+@media (orientation:portrait){
+  .android-phone .tile button{background:transparent;border:0;box-shadow:none;padding:5px;min-height:0;height:26vw;max-height:108px}
+  .android-phone .tile img,.android-phone .tile .glyph{width:22vw;height:22vw;max-width:94px;max-height:94px;vertical-align:middle}
+  .android-phone .tile .glyph{line-height:22vw;font-size:36px}
+  .android-phone .tile button:active{opacity:.65}
+}
+@media (orientation:portrait) and (min-width:428px){.android-phone .tile .glyph{line-height:94px}}
+.windows-deck .tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(4,104px)}
+.windows-deck .tile{width:100%;min-width:0;overflow:hidden}
+.windows-deck .tile button{height:74px;min-height:0;padding:5px;background:transparent;border:0;box-shadow:none}.windows-deck .tile button:active{opacity:.65}
+@media (min-width:650px){
+  .windows-deck .dashboard{display:flex;justify-content:space-between}
+  .windows-deck .deck-main,.windows-deck .sidebar{display:flex;flex-direction:column;min-width:0;float:none}
+  .windows-deck .player,.windows-deck #bluetooth-card{flex:0 0 112px;margin-top:auto;margin-bottom:12px}
+  .windows-deck .player{display:flex;align-items:center}
+  .windows-deck .player .track{flex:1;min-width:0}
+  .windows-deck .player .controls{order:3;float:none}
+  .windows-deck #bluetooth-card{display:flex;flex-direction:column}
+  .windows-deck #bluetooth{min-height:0}
+}
+#phone-address{display:none}
+.windows-deck header{min-height:94px}
+.windows-deck #host{top:0;max-width:62%;padding:6px 10px;background:#391d2a;border:1px solid #633747;border-radius:12px;white-space:normal}
+.windows-deck #host-meta{display:none}
+.windows-deck #phone-address{display:block;margin-top:5px}
+#phone-address span{display:block;font-size:11px;color:#c0aab4}
+#phone-url{font-size:16px;font-weight:bold;color:#f1e7ff;overflow-wrap:anywhere}
+@media(max-width:480px){.windows-deck header{min-height:106px}.windows-deck #clock{font-size:34px}#phone-url{font-size:12px}}
+</style>
+</head>
+<body>
+<main>
+<header><div id="clock"></div><div id="today"></div><div id="host"><button id="fullscreen" type="button" aria-label="Full screen" title="Full screen" style="display:none"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H4v5m11-5h5v5M4 15v5h5m11-5v5h-5"/></svg></button><span class="dot" id="dot"></span><span id="host-name">Connecting</span><span id="host-meta"></span><span id="host-battery"></span><div id="phone-address"><span>Open on your phone</span><a id="phone-url"></a></div></div></header>
+<section id="pairing"><h2>Pair this device</h2><p>Open PTdeck on the PC and enter the six-digit code shown there.</p><form id="pair-form"><input id="pair-code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" aria-label="Pairing code" required> <button class="action">Connect</button></form><p id="pair-status" role="status"></p></section>
+<div class="dashboard">
+<div class="deck-main">
+<div class="tiles" id="tiles"></div><div id="pages" aria-label="App pages"></div><p class="status" id="connection" role="status"></p>
+<div class="card player">
+<div class="controls"><button id="previous" aria-label="Previous track">&#9198;</button><button id="play" aria-label="Play or pause">&#9654;</button><button id="next-track" aria-label="Next track">&#9197;</button></div>
+<div class="cover" aria-hidden="true">&#9835;</div>
+<div class="track"><div id="track-title">Nothing playing</div><div id="artist">Windows media</div><div class="progress"><div id="progress"></div></div></div>
+</div>
+</div>
+<aside class="sidebar">
+<div id="metrics">
+<div class="metric"><small>RAM</small><span id="ram">&ndash;</span></div>
+<div class="metric"><small>CPU</small><span id="cpu">&ndash;</span></div>
+<div class="metric"><small>GPU</small><span id="gpu">&ndash;</span></div>
+<div class="metric"><small id="internet">Internet</small><span id="download">&ndash;</span><br><span id="upload">&ndash;</span></div>
+</div>
+<div id="wide-tabs" role="group" aria-label="Dashboard widgets"><button type="button" data-panel="calendar-card">Calendar</button><button type="button" data-panel="todo-card">To-do</button><button type="button" data-panel="bluetooth-card">Bluetooth</button></div><section id="calendar-card" class="active">
+<h2>Calendar</h2>
+<div class="month"><button id="prev" aria-label="Previous month">&#8249;</button> <span id="month"></span> <button id="next" aria-label="Next month">&#8250;</button></div>
+<table class="calendar"><thead><tr><th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr></thead><tbody id="days"></tbody></table>
+</section><div class="card" id="todo-card"><h2>To-do</h2><ul id="tasks"></ul><form id="task-form"><input id="task-text" maxlength="120" placeholder="New task" aria-label="New task" required> <button aria-label="Add task">+</button></form><p id="task-status" role="status"></p></div><div class="card" id="bluetooth-card"><div class="bluetooth-heading"><h2>Bluetooth</h2></div><ul id="bluetooth"><li>Checking devices</li></ul></div>
+</aside>
+</div>
+<section id="editor" style="display:none">
+<div class="editor-heading"><h2>Edit shortcuts</h2><div class="editor-pair">Pairing code <strong id="pc-pair"></strong></div></div>
+<p class="muted">Enter a Windows app name such as notepad.exe or the full path to an app, shortcut, or file.</p>
+<div id="rows"></div>
+<button id="add">Add button</button> <button class="action" id="save">Save shortcuts</button>
+<p class="status" id="edit-status" role="status"></p>
+</section>
+<div id="fullscreen-help" style="display:none"><section role="dialog" aria-modal="true" aria-labelledby="fullscreen-title"><h2 id="fullscreen-title">Full screen</h2><p id="fullscreen-instructions">In Safari, tap Share, then Add to Home Screen. Turn on Open as Web App if shown. Launch PTdeck from its Home Screen icon.</p><button id="fullscreen-close" type="button">Close</button></section></div></main>
+<script>
+(function () {
+  function el(id) { return document.getElementById(id); }
+  function label(id, value) { el(id).textContent = value; }
+  var ipad = /iPad/.test(navigator.userAgent) || (/Mac/.test(navigator.platform) && navigator.maxTouchPoints > 1);
+  var onPC = location.hostname === '127.0.0.1' || location.hostname === 'localhost';
+  var items = [], page = 0, paired = false, wide = false, pairingShown = false;
+  var androidPhone = !ipad && !onPC && /Android/i.test(navigator.userAgent);
+  function widePhone() {
+    var ratio = Math.max(screen.width, screen.height) / Math.min(screen.width, screen.height);
+    return androidPhone &&
+      window.innerWidth > window.innerHeight && ratio >= 1.95;
+  }
+  function pageSize() { return ipad || onPC ? 16 : wide ? 12 : 0; }
+  var tabs = el('wide-tabs').getElementsByTagName('button');
+  function showPanel(selected) {
+    for (var i = 0; i < tabs.length; i++) {
+      var id = tabs[i].getAttribute('data-panel');
+      tabs[i].setAttribute('aria-pressed', id === selected ? 'true' : 'false');
+      el(id).className = (id === 'calendar-card' ? '' : 'card') + (id === selected ? ' active' : '');
+    }
+  }
+  for (var i = 0; i < tabs.length; i++) {
+    tabs[i].onclick = function () { showPanel(this.getAttribute('data-panel')); };
+  }
+  showPanel('calendar-card');
+  function layout(showPairing) {
+    pairingShown = showPairing;
+    wide = widePhone();
+    document.documentElement.className = (ipad ? 'ipad' : wide ? 'wide' : '') + (androidPhone ? ' android-phone' : '') + (onPC ? ' windows-deck' : '') + (showPairing ? ' pairing' : '');
+  }
+  window.addEventListener('resize', function () {
+    if (wide === widePhone()) return;
+    layout(pairingShown);
+    page = 0;
+    calendar();
+    if (paired) renderTiles();
+  });
+  layout(false);
+  if (ipad) document.querySelector('.dashboard').appendChild(el('bluetooth-card'));
+  if ((ipad || /Android/i.test(navigator.userAgent)) && !navigator.standalone) {
+    var full = el('fullscreen'), help = el('fullscreen-help'), root = document.documentElement;
+    full.style.display = '';
+    if (!ipad) label('fullscreen-instructions', 'Chrome could not enter full screen. Reopen this page directly in Chrome and tap the full-screen button again.');
+    function showHelp() {
+      help.style.display = '';
+      el('fullscreen-close').focus();
+    }
+    el('fullscreen-close').onclick = function () { help.style.display = 'none'; full.focus(); };
+    function fullscreenElement() {
+      return document.fullscreenElement || document.webkitFullscreenElement || document.webkitCurrentFullScreenElement;
+    }
+    function updateFullscreen() {
+      var caption = fullscreenElement() ? 'Exit full screen' : 'Full screen';
+      full.setAttribute('aria-label', caption);
+      full.title = caption;
+    }
+    document.addEventListener('fullscreenchange', updateFullscreen);
+    document.addEventListener('webkitfullscreenchange', updateFullscreen);
+    full.onclick = function () {
+      if (fullscreenElement()) {
+        var exit = document.exitFullscreen || document.webkitExitFullscreen || document.webkitCancelFullScreen;
+        if (exit) exit.call(document);
+        return;
+      }
+      var enter = root.requestFullscreen || root.webkitRequestFullscreen || root.webkitRequestFullScreen;
+      if (!enter) { showHelp(); return; }
+      try {
+        var result = enter.call(root);
+        if (result && result.then) result.then(null, showHelp);
+      } catch (e) { showHelp(); }
+    };
+    document.addEventListener('fullscreenerror', showHelp);
+    document.addEventListener('webkitfullscreenerror', showHelp);
+  }
+  var key = /^[a-f0-9]{48}$/.test(location.hash.slice(1)) ? location.hash.slice(1) : '';
+  try {
+    if (key) { localStorage.setItem('homeLabDeckKey', key); }
+    else { key = localStorage.getItem('homeLabDeckKey') || ''; }
+  } catch (e) {}
+  function request(route, data, done) {
+    var xhr = new XMLHttpRequest();
+    xhr.open(data === null ? 'GET' : 'POST', route, true);
+    xhr.setRequestHeader('X-Deck-UI', '1');
+    if (key) xhr.setRequestHeader('X-Deck-Key', key);
+    if (data !== null) xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState !== 4) return;
+      var result;
+      try { result = JSON.parse(xhr.responseText); } catch (e) { result = {}; }
+      done(xhr.status === 200 ? '' : (result.error || 'Connection unavailable.'), result);
+    };
+    xhr.send(data === null ? null : JSON.stringify(data));
+  }
+  function pad(number) { return number < 10 ? '0' + number : number; }
+  function tick() {
+    var now = new Date();
+    label('clock', pad(now.getHours()) + ':' + pad(now.getMinutes()));
+    label('today', days[now.getDay()] + ' \u00b7 ' + now.getDate() + ' ' + months[now.getMonth()]);
+  }
+  var days = 'Sunday Monday Tuesday Wednesday Thursday Friday Saturday'.split(' ');
+  var months = 'January February March April May June July August September October November December'.split(' ');
+  var date = new Date();
+  var month = new Date(date.getFullYear(), date.getMonth(), 1);
+  function calendar() {
+    var year = month.getFullYear(), index = month.getMonth(), first = month.getDay();
+    var last = new Date(year, index + 1, 0).getDate(), today = new Date();
+    label('month', months[index] + ' ' + pad(index + 1) + '  /  ' + year);
+    var body = el('days');
+    body.innerHTML = '';
+    for (var i = 0; i < (wide ? first + last : 42); i += 7) {
+      var row = document.createElement('tr');
+      for (var j = 0; j < 7; j++) {
+        var day = i + j - first + 1, cell = document.createElement('td');
+        if (day > 0 && day <= last) {
+          cell.textContent = day;
+          if (today.getFullYear() === year && today.getMonth() === index && today.getDate() === day) cell.className = 'current';
+        }
+        row.appendChild(cell);
+      }
+      body.appendChild(row);
+    }
+  }
+  el('prev').onclick = function () { month.setMonth(month.getMonth() - 1); calendar(); };
+  el('next').onclick = function () { month.setMonth(month.getMonth() + 1); calendar(); };
+  tick();
+  calendar();
+  setInterval(tick, 1000);
+
+  function button(text, action) {
+    var control = document.createElement('button');
+    control.textContent = text;
+    control.onclick = action;
+    return control;
+  }
+  function editorRow(item) {
+    var row = document.createElement('div'), name = document.createElement('input'), target = document.createElement('input');
+    row.className = 'row';
+    name.placeholder = 'Button name';
+    target.placeholder = 'Windows app or path';
+    name.setAttribute('aria-label', name.placeholder);
+    target.setAttribute('aria-label', target.placeholder);
+    name.value = item.name;
+    target.value = item.target;
+    row.appendChild(name);
+    row.appendChild(target);
+    row.appendChild(button('Remove', function () { row.parentNode.removeChild(row); }));
+    el('rows').appendChild(row);
+  }
+  function addTile(name, glyph, color, action, id) {
+    var tile = document.createElement('div'), cap = document.createElement('span');
+    var control = button('', action), icon = document.createElement('span');
+    tile.className = 'tile';
+    icon.className = 'glyph';
+    icon.textContent = glyph;
+    if (color) icon.style.backgroundColor = color;
+    control.setAttribute('aria-label', name);
+    control.appendChild(icon);
+    if (id) {
+      var image = document.createElement('img');
+      image.alt = '';
+      image.onload = function () { image.className = 'ready'; icon.style.display = 'none'; };
+      image.src = '/icon/' + id;
+      control.appendChild(image);
+    }
+    cap.className = 'caption';
+    cap.textContent = name;
+    tile.appendChild(control);
+    tile.appendChild(cap);
+    el('tiles').appendChild(tile);
+  }
+  var icons = {
+    notepad:['\u270e','#397ca9'], calculator:['\u00f7','#546cd0'], 'file explorer':['\u25a3','#af772d'],
+    spotify:['\u266b','#168753'], calendar:['\u25a6','#b64d66'], chrome:['\u25c9','#3b925c'],
+    edge:['e','#287bb4'], photos:['\u273f','#a04491']
+  };
+  var colors = ['#6555bf','#256b9b','#a04b79','#337b67','#aa643b'];
+  function speed(value) { return typeof value === 'number' ? value.toFixed(1) + ' Mbps' : '\u2013'; }
+  function percent(value) { return typeof value === 'number' ? value + '%' : '\u2013'; }
+  var deviceIcons = {
+    keyboard:'M3 6h18v12H3zM6 10h1m2 0h1m2 0h1m2 0h1m2 0h1M7 14h10',
+    mouse:'M6 10a6 6 0 0 1 12 0v4a6 6 0 0 1-12 0zM12 5v5',
+    audio:'M4 14v-2a8 8 0 0 1 16 0v2M4 13h4v7H4zM16 13h4v7h-4z',
+    phone:'M7 3h10v18H7zM10 18h4',
+    bluetooth:'M12 2v20l5-5L7 7m5-5 5 5L7 17'
+  };
+  var lastDevices;
+  function status() {
+    if (!paired) return;
+    request('/status', null, function (error, result) {
+      el('dot').className = error ? 'dot' : 'dot online';
+      label('host-name', error ? 'Disconnected' : result.host);
+      var ip = onPC ? result.ip : location.hostname;
+      var battery = typeof result.battery === 'number' ? percent(result.battery) + (result.charging ? ' \u00b7 AC' : ' \u00b7 Battery') : '';
+      label('host-meta', error ? '' : ip);
+      label('host-battery', error ? '' : battery);
+      if (onPC) {
+        var phoneUrl = error ? '' : result.phoneUrl;
+        label('phone-url', phoneUrl || 'Network address unavailable');
+        if (phoneUrl) el('phone-url').href = phoneUrl;
+        else el('phone-url').removeAttribute('href');
+      }
+      var media = error ? null : result.music;
+      label('track-title', media && media.title || 'Nothing playing');
+      label('artist', media && media.artist || 'Windows media');
+      paintPlay(media && media.playing);
+      el('progress').style.width = (media && media.duration > 0 ? Math.max(0, Math.min(100, 100 * media.position / media.duration)) : 0) + '%';
+      el('previous').disabled = el('play').disabled = el('next-track').disabled = !media;
+      label('download', '\u2193 ' + speed(result.down));
+      label('upload', '\u2191 ' + speed(result.up));
+      label('internet', result.internet === true ? 'Online' : result.internet === false ? 'Offline' : 'Internet');
+      label('ram', percent(result.ram));
+      label('cpu', percent(result.cpu));
+      label('gpu', percent(result.gpu));
+      var devices = JSON.stringify(result.bluetooth || null);
+      if (devices !== lastDevices) {
+        lastDevices = devices;
+        var list = el('bluetooth');
+        list.innerHTML = '';
+        (result.bluetooth && result.bluetooth.length ? result.bluetooth : [result.bluetooth ? 'No connected devices' : 'Status unavailable']).forEach(function (device) {
+          var item = document.createElement('li');
+          if (typeof device === 'string') { item.textContent = device; }
+          else {
+            var name = document.createElement('span'), battery = document.createElement('span');
+            var type = /keyboard/i.test(device.name) ? 'keyboard' : /mouse|triathlon/i.test(device.name) ? 'mouse' : /head|buds|airpods|ear/i.test(device.name) ? 'audio' : /phone/i.test(device.name) ? 'phone' : 'bluetooth';
+            item.innerHTML = '<svg class="device-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="' + deviceIcons[type] + '"/></svg>';
+            name.className = 'device-name';
+            name.textContent = device.name;
+            battery.className = 'device-battery';
+            battery.textContent = percent(device.battery);
+            battery.title = typeof device.battery === 'number' ? 'Battery level' : 'Battery not reported';
+            item.appendChild(name);
+            item.appendChild(battery);
+          }
+          list.appendChild(item);
+        });
+      }
+    });
+  }
+  function drawControl(id, shape) {
+    el(id).innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + shape + '"/></svg>';
+  }
+  var painted;
+  function paintPlay(playing) {
+    if (painted === !!playing) return;
+    painted = !!playing;
+    drawControl('play', playing ? 'M6 4h4v16H6zm8 0h4v16h-4z' : 'M7 4l13 8-13 8z');
+  }
+  drawControl('previous','M5 5h2v14H5zm14 0v14L8 12z');
+  drawControl('next-track','M17 5h2v14h-2zM5 5l11 7-11 7z');
+  paintPlay(false);
+  function media(action) {
+    request('/media', {action:action}, function (error) {
+      if (error) label('connection', error);
+      status();
+    });
+  }
+  el('previous').onclick = function () { media('previous'); };
+  el('play').onclick = function () { media('playpause'); };
+  el('next-track').onclick = function () { media('next'); };
+  setInterval(status, 4000);
+  function renderTiles() {
+    var size = pageSize(), count = size ? Math.max(1, Math.ceil(items.length / size)) : 1;
+    page = Math.max(0, Math.min(page, count - 1));
+    el('tiles').innerHTML = '';
+    el('pages').innerHTML = '';
+    var visible = size ? items.slice(page * size, page * size + size) : items;
+    visible.forEach(function (item, i) {
+      var icon = Object.prototype.hasOwnProperty.call(icons,item.name.toLowerCase()) && icons[item.name.toLowerCase()];
+      addTile(item.name, icon ? icon[0] : item.name.charAt(0).toUpperCase(), icon ? icon[1] : colors[i % colors.length], function () {
+        request('/launch', {id:item.id}, function (message) {
+          label('connection', message || 'Opened ' + item.name + '.');
+        });
+      }, item.id);
+    });
+    for (var i = 0; count > 1 && i < count; i++) {
+      (function (index) {
+        var dot = button('\u25cf', function () { page = index; renderTiles(); });
+        dot.className = index === page ? 'selected' : '';
+        dot.setAttribute('aria-label','Page ' + (index + 1));
+        el('pages').appendChild(dot);
+      })(i);
+    }
+  }
+  var swipe;
+  el('tiles').addEventListener('touchstart', function (event) {
+    if (pageSize() && event.touches.length === 1) swipe = {x:event.touches[0].clientX,y:event.touches[0].clientY};
+  });
+  el('tiles').addEventListener('touchcancel', function () { swipe = null; });
+  el('tiles').addEventListener('touchend', function (event) {
+    if (!swipe || !event.changedTouches.length) return;
+    var point = event.changedTouches[0], dx = point.clientX - swipe.x, dy = point.clientY - swipe.y;
+    swipe = null;
+    if (Math.abs(dx) < 42 || Math.abs(dx) < Math.abs(dy)) return;
+    event.preventDefault();
+    page += dx < 0 ? 1 : -1;
+    renderTiles();
+  });
+  function showTasks(tasks) {
+    var list = el('tasks');
+    list.innerHTML = '';
+    tasks.forEach(function (task) {
+      var item = document.createElement('li'), text = document.createElement('label'), check = document.createElement('input');
+      check.type = 'checkbox';
+      check.checked = task.done;
+      check.onchange = function () {
+        var done = check.checked;
+        check.disabled = true;
+        updateTask({action:'toggle',id:task.id,done:done}, function (error) {
+          check.disabled = false;
+          if (error) check.checked = !done;
+        });
+      };
+      text.appendChild(check);
+      text.appendChild(document.createTextNode(task.text));
+      item.appendChild(text);
+      var remove = button('\u00d7', function () { updateTask({action:'delete',id:task.id}); });
+      remove.setAttribute('aria-label','Delete ' + task.text);
+      item.appendChild(remove);
+      list.appendChild(item);
+    });
+  }
+  function updateTask(data, done) {
+    request('/tasks', data, function (error, result) {
+      label('task-status', error);
+      if (!error) showTasks(result.tasks);
+      if (done) done(error);
+    });
+  }
+  el('task-form').onsubmit = function () {
+    var input = el('task-text'), value = input.value;
+    if (!value.trim()) return false;
+    updateTask({action:'add',text:value}, function (error) {
+      if (!error && input.value === value) input.value = '';
+    });
+    return false;
+  };
+  function loadButtons(rebuildEditor) {
+    request('/buttons', null, function (error, result) {
+      label('connection', error);
+      paired = !error;
+      layout(error === 'Pair this device to connect.');
+      if (error) return;
+      items = result.buttons;
+      renderTiles();
+      status();
+      request('/tasks', null, function (message, data) { if (!message) showTasks(data.tasks); });
+      if (result.local && rebuildEditor) {
+        el('editor').style.display = '';
+        el('rows').innerHTML = '';
+        result.buttons.forEach(editorRow);
+      }
+    });
+  }
+  el('pair-form').onsubmit = function () {
+    request('/pair', {pin:el('pair-code').value.trim()}, function (error) {
+      label('pair-status', error);
+      if (!error) {
+        key = '';
+        try { localStorage.removeItem('homeLabDeckKey'); } catch (e) {}
+        loadButtons(true);
+      }
+    });
+    return false;
+  };
+  el('add').onclick = function () { editorRow({name:'',target:''}); };
+  el('save').onclick = function () {
+    var rows = el('rows').children, items = [];
+    for (var i = 0; i < rows.length; i++) {
+      var fields = rows[i].getElementsByTagName('input');
+      items.push({name:fields[0].value,target:fields[1].value});
+    }
+    el('save').disabled = true;
+    request('/configure', {buttons:items}, function (error) {
+      el('save').disabled = false;
+      label('edit-status', error || 'Shortcuts saved. Reload the panel on your phone.');
+      if (!error) loadButtons(false);
+    });
+  };
+  if (onPC) {
+    request('/setup', null, function (error, result) {
+      if (!error) label('pc-pair', result.pin);
+      loadButtons(true);
+    });
+  } else {
+    loadButtons(true);
+  }
+})();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
